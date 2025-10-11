@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- 网站标题 -->
+  <title>Paper - 轻量级微信公众号 Markdown 编辑器</title>
+  
+  <!-- 网站描述 -->
+  <meta name="description" content="Paper 是一款轻量级微信公众号 Markdown 编辑器。现代化三栏布局，实时 Markdown 预览，响应式设计；支持大部分 Markdown 语法，支持信息卡片。预览区与微信公众号编辑器等宽，所见即所得。欢迎使用👏" />
+  
+  <!-- 关键词 -->
+  <meta name="keywords" content="Paper,Markdown编辑器,微信公众号,排版工具,在线编辑器,实时预览,所见即所得,响应式设计,代码高亮,信息卡片" />
+  
+  <!-- 作者信息 -->
+  <meta name="author" content="nabin-cn,xiaolinbaba" />
+  
+  <!-- 网站图标 -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="shortcut icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+  
+  <!-- Open Graph 标签 (社交媒体分享) -->
+  <meta property="og:title" content="Paper - 轻量级微信公众号 Markdown 编辑器" />
+  <meta property="og:description" content="现代化三栏布局，实时 Markdown 预览，支持信息卡片，预览区与微信公众号编辑器等宽，所见即所得" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="favicon.svg" />
+  
+  <!-- Twitter Card 标签 -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Paper - 轻量级微信公众号 Markdown 编辑器" />
+  <meta name="twitter:description" content="现代化三栏布局，实时 Markdown 预览，支持信息卡片，所见即所得" />
+  
+  <!-- 主题颜色 -->
+  <meta name="theme-color" content="#007acc" />
+  
+  <!-- 浏览器兼容性 -->
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
+  
+  <!-- 引入 normalize.css，用于重置默认浏览器样式 -->
+  <link href="https://cdn.jsdelivr.net/npm/normalize.css@8/normalize.css" rel="stylesheet" />
+  <!-- 图标字体（用于顶部工具栏图标） -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- 引入 Showdown，用于将 Markdown 转换为 HTML -->
+  <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+  <!-- 引入 CodeMirror 用于 Markdown 语法高亮 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <!-- 引入 highlight.js 用于代码高亮 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+  <!-- 引入 Canvas-Confetti，用于点击复制后动画效果 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <!-- 引入 DOMPurify，用于 HTML 安全清洗 -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+
+</head>
+<body>
+  <div class="app">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <h1><img src="favicon.svg" alt="Paper" class="app-icon"> Paper</h1>
+        <span class="subtitle">Markdown to WeChat Official Account article ✨</span>
+      </div>
+      <div class="toolbar-right">
+        <a class="btn btn-secondary" href="https://mermaid-live.nodejs.cn/edit" target="_blank" aria-label="Mermaid 渲染">Mermaid渲染</a>
+        <a class="btn btn-secondary" href="https://mathjax.thus.chat" target="_blank" aria-label="数学公式渲染">数学公式渲染</a>
+        <a class="btn btn-secondary" href="https://xiaolinbaba.notion.site/Markdown-22219ccf758c80cabadef46d246bfc39" target="_blank" aria-label="Markdown 语法速查">Markdown语法速查</a>
+        <button class="btn btn-primary" id="copyBtn" aria-label="复制到公众号"><i class="fas fa-copy"></i> 复制到公众号</button>
+        <a href="https://github.com/xiaolinbaba/Paper" target="_blank" class="github-link" title="GitHub"><i class="fab fa-github"></i></a>
+      </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="main-content">
+      <div class="editor-panel">
+        <div class="panel-header">
+          <h3 class="editor-title"><i class="fab fa-markdown editor-title-icon"></i> Markdown</h3>
+          <div class="editor-tools">
+            <button class="tool-btn" id="toolBold" title="加粗 (Ctrl+B)"><i class="fas fa-bold"></i></button>
+            <button class="tool-btn" id="toolItalic" title="斜体 (Ctrl+I)"><i class="fas fa-italic"></i></button>
+            <div class="tool-separator"></div>
+            <button class="tool-btn" id="tbH1" title="一级标题">H1</button>
+            <button class="tool-btn" id="tbH2" title="二级标题">H2</button>
+            <button class="tool-btn" id="tbH3" title="三级标题">H3</button>
+            <div class="tool-separator"></div>
+            <button class="tool-btn" id="toolLink" title="插入链接"><i class="fas fa-link"></i></button>
+            <button class="tool-btn" id="tbUl" title="无序列表"><i class="fas fa-list-ul"></i></button>
+            <button class="tool-btn" id="tbOl" title="有序列表"><i class="fas fa-list-ol"></i></button>
+            <button class="tool-btn" id="tbTask" title="待办框">[ ]</button>
+            <div class="tool-separator"></div>
+            <button class="tool-btn" id="tbTable" title="表格模板"><i class="fas fa-table"></i></button>
+            <button class="tool-btn" id="tbReset" title="恢复默认内容"><i class="fas fa-rotate-left"></i></button>
+          </div>
+        </div>
+        <div class="editor-with-lines">
+          <pre class="line-numbers" aria-hidden="true"></pre>
+          <textarea class="markdown-editor" id="markdown" placeholder="在此输入 Markdown 内容...&#10;&#10;支持实时预览，编辑完成后可一键复制到微信公众号。" spellcheck="false"></textarea>
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="panel-header">
+          <h3 class="preview-title"><i class="fas fa-eye"></i> 实时预览</h3>
+          <div class="preview-tools">
+            <button class="tool-btn" id="zoomOut" title="缩小"><i class="fas fa-search-minus"></i></button>
+            <span class="zoom-level" id="zoomLevel">100%</span>
+            <button class="tool-btn" id="zoomIn" title="放大"><i class="fas fa-search-plus"></i></button>
+          </div>
+        </div>
+        <div class="preview-container">
+          <div class="preview-content">
+            <div class="preview-inner">
+              <article id="preview" class="typo"></article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-left">
+        <span id="wordCount">字数: 0</span>
+        <span id="charCount">字符: 0</span>
+        <span id="saveStatus">已保存</span>
+      </div>
+      <div class="status-center">
+        <span>Copyright © 2025-2030 nabin-cn,xiaolinbaba. All Rights Reserved.</span>
+      </div>
+      <div class="status-right">
+        <span>Markdown</span>
+        <span>UTF-8</span>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
